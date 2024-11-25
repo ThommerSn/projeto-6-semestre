@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <title>Sistema de Estoque</title>
+    <style>
+        body {
+            background-image: url('https://img.freepik.com/vetores-gratis/vetor-de-modelo-de-quadro-de-curva-verde-e-cinza_53876-173304.jpg?w=740&t=st=1727798692~exp=1727799292~hmac=048ec530cd58be89d52059fc9687604f4e0c75f5014c6abed125a0e5b56c0784');
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            background-color: #5e5e5e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group button:hover {
+            background-color: #1c702e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <ul>
+            <li><a href="armazenamento.html">Início</a></li>
+            <li><a href="servicos.html">Serviços</a></li>
+            <li><a href="contato.html">Contato</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Sistema de Estoque</h1>
+        <div class="form-group">
+            <label for="item">Produto:</label>
+            <input type="text" id="item" placeholder="Nome do produto">
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantidade:</label>
+            <input type="number" id="quantity" placeholder="Quantidade">
+        </div>
+        <div class="form-group">
+            <button onclick="addItem()">Adicionar Item <i class="fas fa-shopping-cart"></i></button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="inventory">
+                <!-- Itens do estoque serão adicionados aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addItem() {
+            const item = document.getElementById('item').value;
+            const quantity = document.getElementById('quantity').value;
+
+            if (item && quantity) {
+                const table = document.getElementById('inventory');
+                const row = table.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.innerHTML = item;
+                cell2.innerHTML = quantity;
+                cell3.innerHTML = '<button onclick="removeItem(this)">Remover</button>';
+
+                saveToLocalStorage(item, quantity);
+
+                document.getElementById('item').value = '';
+                document.getElementById('quantity').value = '';
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        function saveToLocalStorage(item, quantity) {
+            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+            inventory.push({ item, quantity });
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+        }
+
+        function loadFromLocalStorage() {
+            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+            const table = document.getElementById('inventory');
+            inventory.forEach(entry => {
+                const row = table.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.innerHTML = entry.item;
+                cell2.innerHTML = entry.quantity;
+                cell3.innerHTML = '<button onclick="removeItem(this)">Remover</button>';
+            });
+        }
+
+        function removeItem(button) {
+            const row = button.parentNode.parentNode;
+            const item = row.cells[0].innerText;
+            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+            inventory = inventory.filter(entry => entry.item !== item);
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            row.parentNode.removeChild(row);
+        }
+
+        window.onload = loadFromLocalStorage;
+    </script>
+</body>
+
+</html>
