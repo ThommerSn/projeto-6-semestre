@@ -126,10 +126,10 @@
             event.preventDefault();
             const itemId = document.getElementById('itemId').value;
             const itemName = document.getElementById('itemName').value;
-            const itemQuantity = document.getElementById('quantity').value;
+            const itemQuantity = parseInt(document.getElementById('quantity').value);
 
-            if (itemId && itemName && itemQuantity) {
-                items.push({ id: itemId, name: itemName, quantity: parseInt(itemQuantity) });
+            if (itemId && itemName && itemQuantity > 0) {
+                items.push({ id: itemId, name: itemName, quantity: itemQuantity });
                 localStorage.setItem('items', JSON.stringify(items));
                 renderItems();
                 document.getElementById('itemForm').reset();
@@ -145,97 +145,41 @@
             const itemList = document.getElementById('itemList');
             itemList.innerHTML = '';
             const filteredItems = items.filter(item => item.name.toLowerCase().includes(query));
-            filteredItems.forEach(item => {
+            filteredItems.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
                     <td>
-                        <input type="number" id="removeQuantity-${item.id}" placeholder="Quantidade" min="1">
-                        <button onclick="removeQuantity('${item.id}')">Remover Quantidade</button>
+                        <input type="number" id="removeQuantity-${index}" placeholder="Quantidade" min="1">
+                        <button onclick="removeQuantity(${index})">Remover Quantidade</button>
                     </td>
                 `;
                 itemList.appendChild(tr);
             });
         }
 
-        function removeQuantity(itemId) {
-            const removeQty = parseInt(document.getElementById(`removeQuantity-${itemId}`).value);
-            items = items.map(item => {
-                if (item.id === itemId) {
-                    return { ...item, quantity: item.quantity - removeQty };
+        function removeQuantity(index) {
+            const removeQty = parseInt(document.getElementById(`removeQuantity-${index}`).value);
+            if (!isNaN(removeQty) && removeQty > 0) {
+                if (removeQty > items[index].quantity) {
+                    console.log("Quantidade a remover é maior do que a quantidade disponível!");
+                    return;
                 }
-                return item;
-            }).filter(item => item.quantity > 0); // Remove item se a quantidade for 0 ou menor
-            localStorage.setItem('items', JSON.stringify(items));
-            renderItems();
+                items[index].quantity -= removeQty;
+                if (items[index].quantity === 0) {
+                    items.splice(index, 1); // Remove o item se a quantidade for 0
+                }
+                localStorage.setItem('items', JSON.stringify(items));
+                renderItems();
+            } else {
+                console.log("Por favor, insira uma quantidade válida para remover.");
+            }
         }
 
         // Renderiza os itens ao carregar a página
         renderItems();
     </script>
 </body>
-</html>
-
-
-    <script>
-        function addItem() {
-            const item = document.getElementById('item').value;
-            const quantity = document.getElementById('quantity').value;
-
-            if (item && quantity) {
-                const table = document.getElementById('inventory');
-                const row = table.insertRow();
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                const cell3 = row.insertCell(2);
-
-                cell1.innerHTML = item;
-                cell2.innerHTML = quantity;
-                cell3.innerHTML = '<button onclick="removeItem(this)">Remover</button>';
-
-                saveToLocalStorage(item, quantity);
-
-                document.getElementById('item').value = '';
-                document.getElementById('quantity').value = '';
-            } else {
-                alert('Por favor, preencha todos os campos.');
-            }
-        }
-
-        function saveToLocalStorage(item, quantity) {
-            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-            inventory.push({ item, quantity });
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-        }
-
-        function loadFromLocalStorage() {
-            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-            const table = document.getElementById('inventory');
-            inventory.forEach(entry => {
-                const row = table.insertRow();
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                const cell3 = row.insertCell(2);
-
-                cell1.innerHTML = entry.item;
-                cell2.innerHTML = entry.quantity;
-                cell3.innerHTML = '<button onclick="removeItem(this)">Remover</button>';
-            });
-        }
-
-        function removeItem(button) {
-            const row = button.parentNode.parentNode;
-            const item = row.cells[0].innerText;
-            let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-            inventory = inventory.filter(entry => entry.item !== item);
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-            row.parentNode.removeChild(row);
-        }
-
-        window.onload = loadFromLocalStorage;
-    </script>
-</body>
-
 </html>
