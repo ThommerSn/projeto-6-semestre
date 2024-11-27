@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +12,6 @@
             background-size: cover;
             background-repeat: no-repeat;
             font-family: Arial, sans-serif;
-
         }
 
         .container {
@@ -76,7 +74,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <nav>
@@ -86,32 +83,101 @@
             <li><a href="contato.html">Contato</a></li>
         </ul>
     </nav>
+    <h1>Sistema de armazenamento</h1>
     <div class="container">
         <h1>Sistema de Estoque</h1>
+        
         <div class="form-group">
-            <label for="item">Produto:</label>
-            <input type="text" id="item" placeholder="Nome do produto">
+            <label for="itemId">ID do Item:</label>
+            <input type="text" id="itemId" required>
         </div>
         <div class="form-group">
-            <label for="quantity">Quantidade:</label>
-            <input type="number" id="quantity" placeholder="Quantidade">
+            <label for="itemName">Nome do Item:</label>
+            <input type="text" id="itemName" required>
         </div>
         <div class="form-group">
-            <button onclick="addItem()">Adicionar Item <i class="fas fa-shopping-cart"></i></button>
+            <label for="quantity">Quantidade Disponível:</label>
+            <input type="number" id="quantity" placeholder="Quantidade Disponível" required>
         </div>
+        <form id="itemForm" class="form-group">
+            <button type="submit">Adicionar Item <i class="fas fa-shopping-cart"></i></button>
+        </form>
+        <input type="text" id="searchBox" placeholder="Pesquisar itens...">
+        
         <table>
             <thead>
                 <tr>
-                    <th>Item</th>
+                    <th>ID</th>
+                    <th>Nome</th>
                     <th>Quantidade</th>
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="inventory">
+            <tbody id="itemList">
                 <!-- Itens do estoque serão adicionados aqui -->
             </tbody>
         </table>
     </div>
+
+    <script>
+        let items = JSON.parse(localStorage.getItem('items')) || [];
+
+        document.getElementById('itemForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const itemId = document.getElementById('itemId').value;
+            const itemName = document.getElementById('itemName').value;
+            const itemQuantity = document.getElementById('quantity').value;
+
+            if (itemId && itemName && itemQuantity) {
+                items.push({ id: itemId, name: itemName, quantity: parseInt(itemQuantity) });
+                localStorage.setItem('items', JSON.stringify(items));
+                renderItems();
+                document.getElementById('itemForm').reset();
+            }
+        });
+
+        document.getElementById('searchBox').addEventListener('input', function(event) {
+            const query = event.target.value.toLowerCase();
+            renderItems(query);
+        });
+
+        function renderItems(query = '') {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+            const filteredItems = items.filter(item => item.name.toLowerCase().includes(query));
+            filteredItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>
+                        <input type="number" id="removeQuantity-${item.id}" placeholder="Quantidade" min="1">
+                        <button onclick="removeQuantity('${item.id}')">Remover Quantidade</button>
+                    </td>
+                `;
+                itemList.appendChild(tr);
+            });
+        }
+
+        function removeQuantity(itemId) {
+            const removeQty = parseInt(document.getElementById(`removeQuantity-${itemId}`).value);
+            items = items.map(item => {
+                if (item.id === itemId) {
+                    return { ...item, quantity: item.quantity - removeQty };
+                }
+                return item;
+            }).filter(item => item.quantity > 0); // Remove item se a quantidade for 0 ou menor
+            localStorage.setItem('items', JSON.stringify(items));
+            renderItems();
+        }
+
+        // Renderiza os itens ao carregar a página
+        renderItems();
+    </script>
+</body>
+</html>
+
 
     <script>
         function addItem() {
